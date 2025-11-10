@@ -1,0 +1,106 @@
+/* Basic, clean, responsive styles */
+:root {
+  --bg: #0b1020;
+  --text: #e9eef7;
+  --muted: #b5c1d6;
+  --primary: #4ea1ff;
+  --card: #131a33;
+  --card-border: #1c264a;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.container { max-width: 1100px; margin: 0 auto; padding: 1rem; }
+
+.site-header {
+  background: linear-gradient(90deg, #0b1020, #0f1730 60%, #162452);
+  border-bottom: 1px solid var(--card-border);
+}
+.site-header h1 { margin: 0.5rem 0 0; }
+.subtitle { margin: 0.25rem 0 1rem; color: var(--muted); }
+
+.nav a {
+  color: var(--text);
+  text-decoration: none;
+  margin-right: 1rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 2px solid transparent;
+}
+.nav a.active, .nav a:hover { border-color: var(--primary); }
+
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  align-items: center;
+  margin: 1rem 0 2rem;
+}
+.hero-img { width: 100%; border-radius: 16px; border: 1px solid var(--card-border); }
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+.button {
+  display: inline-block;
+  background: var(--primary);
+  color: #06122b;
+  text-decoration: none;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+.button.secondary { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 1rem;
+}
+.panel {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 1rem;
+}
+.figure {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+}
+
+.map { width: 100%; height: 420px; border-radius: 12px; border: 1px solid var(--card-border); }
+
+.prose h2 { margin-top: 0.25rem; }
+.muted { color: var(--muted); }
+
+.site-footer {
+  border-top: 1px solid var(--card-border);
+  margin-top: 2rem;
+  padding: 1rem 0;
+  color: var(--muted);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: 1fr; }
+  .cards { grid-template-columns: 1fr; }
+}

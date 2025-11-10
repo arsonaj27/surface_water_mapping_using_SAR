@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data & Methodology | Surface Water Mapping Using SAR</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>Data & Methodology</h1>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="data.html" class="active">Data & Methodology</a>
+        <a href="results.html">Results</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <article class="prose">
+      <h2>Data</h2>
+      <ul>
+        <li><strong>SAR</strong>: Sentinel‑1 GRD (VV/VH). Filters: orbit, speckle, border noise removal.</li>
+        <li><strong>DEM (optional)</strong>: SRTM or local DEM for terrain context.</li>
+        <li><strong>Ancillary</strong>: Study area boundary, shoreline masks.</li>
+      </ul>
+
+      <h2>Workflow</h2>
+      <ol>
+        <li>Preprocess SAR (calibration, speckle filtering, terrain correction).</li>
+        <li>Generate water masks (e.g., Otsu threshold or edge‑Otsu).</li>
+        <li>Post‑process (morphological filtering, hole filling).</li>
+        <li>Aggregate to monthly maps and compute water area time series.</li>
+        <li>Validate using available observations (if any).</li>
+      </ol>
+
+      <h2>Time Series (Placeholder)</h2>
+      <div id="timeseries" class="plot"></div>
+      <p class="muted">This placeholder uses Plotly. Replace the dummy data in <code>assets/js/script.js</code>.</p>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 2025 Ashutosh Lamsal</p>
+    </div>
+  </footer>
+
+  <!-- Plotly CDN -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="assets/js/script.js"></script>
+</body>
+</html>
