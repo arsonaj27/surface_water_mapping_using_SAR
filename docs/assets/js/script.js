@@ -1,37 +1,82 @@
-// Placeholder JS for Plotly time series and Leaflet map
-// ===== Plotly Time Series (on data.html) =====
+// ===== Leaflet Map: Kulekhani Reservoir Focus =====
 (function() {
-  var el = document.getElementById('timeseries');
-  if (!el) return;
-  // Dummy monthly area data (replace with your numbers)
-  var months = ['2024-01','2024-02','2024-03','2024-04','2024-05','2024-06','2024-07','2024-08','2024-09','2024-10','2024-11','2024-12'];
-  var area_km2 = [2.3,2.1,2.8,3.2,3.0,2.9,2.7,2.5,2.4,2.6,2.9,3.1];
-  var trace = { x: months, y: area_km2, mode: 'lines+markers', name: 'Water area (km²)' };
-  var layout = { title: 'Monthly Surface Water Area (Placeholder)', xaxis: {title: 'Month'}, yaxis: {title: 'Area (km²)'} };
-  Plotly.newPlot(el, [trace], layout, {responsive: true});
-})();
+  var mapEl = document.getElementById('map');
+  if (!mapEl) return;
 
-// ===== Leaflet Map (on results.html) =====
-(function() {
-  var mapDiv = document.getElementById('map');
-  if (!mapDiv) return;
-  var map = L.map('map').setView([27.633, 85.15], 12); // Replace with your AOI center
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  // Center map on Kulekhani Reservoir (approx from your GEE geometry)
+  // Coordinates derived from: [85.12, 27.63] to [85.18, 27.58]
+  var map = L.map('map').setView([27.608, 85.153], 13);
+
+  // Dark basemap for better contrast with water masks
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors'
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
   }).addTo(map);
 
-  // Example GeoJSON placeholder (replace with your exported contours/polygons)
-  var samplePoly = {
-    "type": "FeatureCollection",
-    "features": [{
-      "type": "Feature",
-      "properties": {"name":"Water Polygon (placeholder)"},
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [[[85.14,27.63],[85.16,27.63],[85.16,27.62],[85.14,27.62],[85.14,27.63]]]
-      }
-    }]
+  // Placeholder Polygon: Approximating the reservoir shape
+  // You should replace this 'coordinates' array with your actual exported GeoJSON from GEE
+  var waterPolygon = {
+    "type": "Feature",
+    "properties": { "name": "Kulekhani Water Extent (Oct 2019)" },
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [[
+        [85.145, 27.620], [85.150, 27.618], [85.155, 27.615], 
+        [85.160, 27.610], [85.165, 27.605], [85.160, 27.600], 
+        [85.150, 27.602], [85.140, 27.610], [85.135, 27.615], 
+        [85.145, 27.620]
+      ]]
+    }
   };
-  L.geoJSON(samplePoly, { style: { weight: 1 } }).addTo(map);
+
+  L.geoJSON(waterPolygon, {
+    style: { color: "#4ea1ff", weight: 2, fillOpacity: 0.4 }
+  }).bindPopup("<b>Detected Water Extent</b><br>Method: Edge Otsu").addTo(map);
+})();
+
+
+// ===== Plotly Time Series: Satellite vs. Site Data =====
+(function() {
+  var chartEl = document.getElementById('timeseries');
+  if (!chartEl) return;
+
+  // Placeholder Data: Replace these arrays with your Python analysis results
+  var dates = ['2019-10', '2019-11', '2019-12', '2020-01', '2020-02', '2020-03'];
+  
+  // Trace 1: Calculated Area (Satellite)
+  var sarArea = {
+    x: dates,
+    y: [2.1, 1.95, 1.80, 1.75, 1.60, 1.55], // Dummy values in km²
+    mode: 'lines+markers',
+    name: 'SAR Derived Area',
+    line: { color: '#4ea1ff', width: 3 }
+  };
+
+  // Trace 2: Site Data (Ground Truth)
+  var siteArea = {
+    x: dates,
+    y: [2.15, 1.98, 1.82, 1.78, 1.65, 1.58], // Dummy values in km²
+    mode: 'lines+markers',
+    name: 'In-situ Measurement',
+    line: { color: '#ff9f43', width: 3, dash: 'dot' }
+  };
+
+  var layout = {
+    title: { text: 'Water Area Comparison', font: { color: '#e9eef7' } },
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    plot_bgcolor: 'rgba(0,0,0,0)',
+    xaxis: { 
+      title: 'Date', 
+      color: '#b5c1d6', 
+      gridcolor: '#1c264a' 
+    },
+    yaxis: { 
+      title: 'Area (km²)', 
+      color: '#b5c1d6', 
+      gridcolor: '#1c264a' 
+    },
+    legend: { x: 0, y: 1, font: { color: '#e9eef7' } }
+  };
+
+  Plotly.newPlot(chartEl, [sarArea, siteArea], layout, {responsive: true});
 })();
