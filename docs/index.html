@@ -52,15 +52,47 @@
     <h2>About The Project</h2>
 
     <p>
-      Synthetic Aperture Radar (SAR) is an active remote sensing system that transmits microwave 
-      signals toward the Earth's surface and records the energy that returns back to the sensor. 
+      <strong>Synthetic Aperture Radar (SAR)</strong> is an active remote sensing system that transmits microwave 
+      signals toward the Earth's surface and records the energy that returns back to the sensor. A major limitation of satelite 
+      imagery is the presence of clouds. In a region like Nepal, where there is cloudy during monsoon season, it is very difficult 
+      to create a visible time series of any surface water. Sentinel-1 and other SAR sensors employ radar waves, which can pass 
+      through clouds and provide us a picture of the earth's surface. SAR operates by directing a radar signal at an off-nadir 
+      angle that is, not straight down, but at an angle, from the satellite toward the ground. The satellite monitors the amount 
+      of backscatter that returns to it after the signal strikes the ground and scatters. The roughness of the surface affects 
+      how much backscatter there is; smoother surfaces scatter less. In contrast to very high scattering land surfaces, large, 
+      flat surfaces like water scatter very little and show out as black blotches. 
       Because SAR uses microwaves instead of visible light, it can penetrate clouds and operate 
       day or night, making it ideal for monitoring water bodies in cloudy, mountainous regions like 
-      Kulekhani, Nepal.
+      Nepal.
     </p>
     <div class="image-center">
-      <img src="assets/images/sar_raw_img.png" alt="SAR Overview" class="about-img" />
+      <img src="assets/images/sar_images.png" alt="SAR Overview" class="about-img" />
     </div>
+    <p>
+    Here we load the Sentinel-1 collection and filter for images of our region taken after 2017. We also filter for type of signal 
+    recieved. “VV” stands for vertical transmit, vertical recieved. This means that both the signal transnmited from and recieved 
+    by from the satellite is vertically polarized. Some surfaces alter the polarization of the radar signal, but for water body 
+    detection, this is usually unused. We only care that all of our images have the same kind of transmit/recieve polarizations.
+    The below is the GEE code for downloading the Sentinel-1 image.
+    </p>
+
+      <div class="code-box">
+    <h3>GEE Implementation Snippet</h3>
+    <pre><code>// Sentinel-1 Filtering
+    var s1 = ee.ImageCollection('COPERNICUS/S1_GRD')
+      .filterBounds(geometry)
+      .filter(ee.Filter.eq('instrumentMode', 'IW'))
+      .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
+      .select('VV');
+
+    // Edge Otsu Thresholding (HydraFloods)
+    var edgeWater = hydrafloods.thresholding.edgeOtsu(
+      smoothed,
+      { initialThreshold: -20, smoothEdges: 300 }
+    );</code></pre>
+          </div>
+        </div>
+      </section>
 
     <p>
       The strength of the returned signal, known as <strong>backscatter</strong>, varies depending 
