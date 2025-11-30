@@ -96,11 +96,22 @@
     </p>
 
 
-              <div class="image-center">
+<section id="about" class="section-alt">
+  <div class="container prose center-content">
+
+    <h2>About The Project</h2>
+
+    <p>
+      Surface water bodies play a vital role in supporting ecosystem services, including hydropower and agriculture.
+      Monitoring is essential, but conventional ground-based methods are costly. 
+      <strong>The Kulekhani Reservoir</strong> is Nepal's only operational storage-based hydropower facility.
+      This project utilizes <strong>Sentinel-1 Synthetic Aperture Radar (SAR)</strong> to overcome cloud cover 
+      and provide continuous monitoring.
+    </p>
+
+    <div class="image-center">
       <img src="assets/images/sar_raw_img.png" alt="Raw SAR Image" class="about-img" />
     </div>
-        </div>
-      </section>
 
     <p>
       The strength of the returned signal, known as <strong>backscatter</strong>, varies depending 
@@ -108,6 +119,7 @@
       because they reflect the microwaves away from the sensor, producing very low backscatter values. 
       In contrast, rough terrain, vegetation, and built-up areas reflect more energy, appearing bright.
     </p>
+
     <div class="image-center">
       <img src="assets/images/backscattering.png" alt="Backscatter Example" class="about-img" />
     </div>
@@ -118,20 +130,22 @@
       <strong>Otsu segmentation</strong> on Sentinel-1 VV polarization, this project generates reliable 
       surface water masks that remain consistent across seasons—regardless of cloud cover.
     </p>
+
     <div class="image-center">
       <img src="assets/images/otsu_segmentation.png" alt="Otsu Segmentation" class="about-img" />
     </div>
 
-    <!-- Key Objectives -->
     <h3>Key Objectives</h3>
     <ul>
       <li>Map surface water extent consistently over time (2014-2017).</li>
       <li>Utilize Google Earth Engine (GEE) for cloud-based processing.</li>
-      <li>Compare satellite-derived data (both SAR and JRC) time series with in-situ site data.</li>
-      <li>Compute statistical coefficients between them.</li>
+      <li>Compare satellite-derived data (SAR and JRC) with in-situ measurements.</li>
+      <li>Compute statistical correlations and evaluate accuracy.</li>
     </ul>
 
   </div>
+</section>
+
 </section>
 
 
@@ -376,6 +390,11 @@ for (var i = 0; i < count; i++) {
       a powerful monitoring system that enhances Nepal's capacity for water resource management 
       and disaster resilience.
     </p>
+    <p>
+  You can access the codes and tutorials form the 
+  <a href="https://github.com/arsonaj27/surface_water_mapping_using_SAR" target="_blank">GitHub</a> repository.
+</p>
+
 
   </div>
 </section>
