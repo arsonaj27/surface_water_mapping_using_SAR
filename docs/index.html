@@ -78,21 +78,24 @@
 
       <div class="code-box">
     <h3>GEE Implementation Snippet</h3>
-    <pre><code>// Sentinel-1 Filtering
-    var s1 = ee.ImageCollection('COPERNICUS/S1_GRD')
-      .filterBounds(geometry)
-      .filter(ee.Filter.eq('instrumentMode', 'IW'))
-      .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
-      .select('VV');
+    <pre><code>// Sentinel-1 data collection and filtering
+        var s1 = ee.ImageCollection('COPERNICUS/S1_GRD')
+          .filterBounds(geometry)
+          .filterDate('2019-10-01', '2019-10-31')
+          .filter(ee.Filter.eq('instrumentMode', 'IW'))
+          .filter(ee.Filter.eq('orbitProperties_pass', 'ASCENDING'))
+          .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
+          .select('VV');
 
-    // Edge Otsu Thresholding (HydraFloods)
-    var edgeWater = hydrafloods.thresholding.edgeOtsu(
-      smoothed,
-      { initialThreshold: -20, smoothEdges: 300 }
-    );</code></pre>
+        Map.addLayer(s1.mean().clip(geometry), {min:-25, max:0}, 'Mean VV');
+</code></pre>
           </div>
+              <p>
+    The given below image is an example of the raw image sentinnel image which has been downloaded from the 
+    above script.
+    </p>
 
-          
+
               <div class="image-center">
       <img src="assets/images/sar_raw_img.png" alt="Raw SAR Image" class="about-img" />
     </div>
@@ -106,7 +109,7 @@
       In contrast, rough terrain, vegetation, and built-up areas reflect more energy, appearing bright.
     </p>
     <div class="image-center">
-      <img src="assets/images/filered_sar_img.png" alt="Backscatter Example" class="about-img" />
+      <img src="assets/images/backscattering.png" alt="Backscatter Example" class="about-img" />
     </div>
 
     <p>
@@ -116,7 +119,7 @@
       surface water masks that remain consistent across seasons—regardless of cloud cover.
     </p>
     <div class="image-center">
-      <img src="assets/images/water_mask.png" alt="SAR Water Mapping" class="about-img" />
+      <img src="assets/images/otsu_segmentation.png" alt="Otsu Segmentation" class="about-img" />
     </div>
 
     <!-- Key Objectives -->
@@ -124,7 +127,7 @@
     <ul>
       <li>Map surface water extent consistently over time (2014-2017).</li>
       <li>Utilize Google Earth Engine (GEE) for cloud-based processing.</li>
-      <li>Compare satellite-derived area time series with in-situ site data.</li>
+      <li>Compare satellite-derived data (both SAR and JRC) time series with in-situ site data.</li>
       <li>Compute statistical coefficients between them.</li>
     </ul>
 
@@ -136,40 +139,132 @@
     <div class="container">
       <h2>Data & Methodology</h2>
       
-      <div class="method-grid">
+      <div class="method-step">
         <div class="method-step">
           <h3>1. Data Acquisition</h3>
-          <p><strong>Sentinel-1 GRD (IW, VV, Ascending)</strong> images are filtered for the Kulekhani AOI. SAR allows for data collection during monsoon seasons when optical satellites are blocked by clouds.</p>
+          <p><strong>Sentinel-1 GRD (IW, VV, Ascending)</strong> images are filtered for the Kulekhani reservoir area.
+            SAR allows for data collection during monsoon seasons when optical satellites are blocked by clouds.
+           </p>
+              <div class="image-center">
+      <img src="assets/images/sar_raw_img.png" alt="Otsu Segmentation" class="about-img" />
+          </div>
+          <p>
+          Similarly, from the same platform use download the JRC dataset that contains monthly 
+          data of surface water area.
+          </p>
+            <div class="image-center">
+      <img src="assets/images/jrc_data.png" alt="Otsu Segmentation" class="about-img" />
+          </div>
+          <p>
+            Both of the images are sourced from Google Earth Engine.
+          </p>
         </div>
         <div class="method-step">
           <h3>2. Preprocessing</h3>
           <p>We apply a <strong>Lee Sigma Speckle Filter</strong> to reduce noise while preserving edges, using the <code>hydrafloods</code> module in GEE.</p>
         </div>
+        <div class="image-center">
+      <img src="assets/images/filered_sar_img.png" alt="Otsu Segmentation" class="about-img" />
+          </div>
         <div class="method-step">
           <h3>3. Water Extraction</h3>
-          <p>An <strong>Edge Otsu</strong> thresholding algorithm automatically separates water from non-water pixels based on backscatter intensity.</p>
+          <p>An <strong>Edge Otsu</strong> thresholding algorithm automatically separates water from non-water pixels based on backscatter intensity.
+           We are only required to apply Edge Otsu algorithm to create a binary mask for SAR Images, whereas for the
+          JRC datasets, we wont require them as they are already a binary image. For easing the edgeOtsu process, we use
+        EdgeOtsu library from hydrafloods.</p>
         </div>
+        <div class="image-center">
+      <img src="assets/images/water_mask.png" alt="Otsu Segmentation" class="about-img" />
+          </div>
         <div class="method-step">
           <h3>4. Analysis</h3>
-          <p>Binary water masks (10m/px) are aggregated to calculate total surface area (km²) and compared against ground truth data.</p>
+          <p>The later process is carried out on python. Binary mask derived from SAR images have resolution of 10m/pixels
+            whereas, those ones obtained from the JRC dataset have resolution of 30m/px.
+          </p>
         </div>
       </div>
 
       <div class="code-box">
         <h3>GEE Implementation Snippet</h3>
         <pre><code>// Sentinel-1 Filtering
+// Import HydraFloods module
+var hydrafloods = require('users/kelmarkert/hydrafloods:main.js');
+
+// Define Region of Interest: Kulekhani Reservoir
+var geometry = ee.Geometry.Polygon(
+  [[[85.12266294746495, 27.6337444538432],
+    [85.12266294746495, 27.582633628899824],
+    [85.18411772041416, 27.582633628899824],
+    [85.18411772041416, 27.6337444538432]]],
+  null, false
+);
+
+Map.centerObject(geometry, 12);
+Map.addLayer(geometry, {color:'red'}, 'Kulekhani AOI');
+
+// Sentinel-1 data collection 
+
 var s1 = ee.ImageCollection('COPERNICUS/S1_GRD')
   .filterBounds(geometry)
+  .filterDate('2015-01-01', '2015-12-31') 
   .filter(ee.Filter.eq('instrumentMode', 'IW'))
+  .filter(ee.Filter.eq('orbitProperties_pass', 'ASCENDING'))
   .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
   .select('VV');
 
-// Edge Otsu Thresholding (HydraFloods)
-var edgeWater = hydrafloods.thresholding.edgeOtsu(
-  smoothed,
-  { initialThreshold: -20, smoothEdges: 300 }
+var count = s1.size().getInfo();
+print('Processing ' + count + ' images...');
+
+var s1List = s1.toList(count);
+
+// Loop through images individually
+
+for (var i = 0; i < count; i++) {
+  
+  // A. Get the single raw image
+  var rawImg = ee.Image(s1List.get(i));
+  
+  // B. Apply Speckle Filter (LeeSigma works on single images)
+  var smoothed = hydrafloods.filtering.leeSigma(rawImg);
+  
+  // C. CRITICAL FIX: Wrap the image in a Collection 
+  // The edgeOtsu function demands a Collection, so we give it a collection of 1.
+  var singleImageCollection = ee.ImageCollection([smoothed]);
+  
+  // D. Run Edge Otsu
+  var edgeWater = hydrafloods.thresholding.edgeOtsu(
+    singleImageCollection,
+    {
+      initialThreshold: -20,
+      smoothEdges: 300,
+      verbose: false 
+    }
+  );
+
+  // E. Create Filename
+  var imgId = rawImg.id().getInfo();
+  var fileName = 'Kulekhani_Binary_' + imgId;
+
+  // F. Export
+  // Note: edgeOtsu usually returns an Image when run this way.
+  Export.image.toDrive({
+    image: edgeWater.clip(geometry),
+    description: fileName, 
+    folder: 'GEE_Kulekhani_2014_2017', 
+    scale: 10,
+    region: geometry,
+    crs: 'EPSG:4326',
+    maxPixels: 1e13
+  });
+}
 );</code></pre>
       </div>
+            <p>
+        The Visualization after running the above code looks like below.
+      </p>
+                <div class="image-center">
+      <img src="assets/images/vis.png" alt="Otsu Segmentation" class="about-img" />
+          </div>
     </div>
   </section>
 
@@ -179,8 +274,8 @@ var edgeWater = hydrafloods.thresholding.edgeOtsu(
       
       <div class="panel">
         <div class="panel-header">
-          <h3>Interactive Water Mask Map</h3>
-          <span class="badge">Study Area: Kulekhani</span>
+          <h3>Study Area Location</h3>
+          <span class="badge">Study Area: Kulekhani Reservoir, Nepal</span>
         </div>
         <div id="map" class="map-container"></div>
         <p class="caption">Binary water mask (Blue) overlaid on OpenStreetMap. Zoom in to see the Kulekhani reservoir boundaries.</p>
@@ -193,13 +288,105 @@ var edgeWater = hydrafloods.thresholding.edgeOtsu(
       </div>
 
     </div>
-  </section>
+<section id="conclusion" class="section-alt">
+  <div class="container prose">
+    <h2>Conclusion & Key Insights</h2>
+
+    <p>
+      The comparison between surface water area obtained from <strong>Sentinel-1 SAR</strong>, 
+      <strong>JRC Global Surface Water</strong>, and 
+      <strong>in-situ reservoir measurements</strong> provides important insights for 
+      understanding water dynamics of Kulekhani Reservoir. This analysis demonstrates the 
+      strengths and weaknesses of radar-based and optical-based measurements compared to ground-based measurements 
+      for hydrological monitoring.
+    </p>
+
+    <h3>1. Sentinel-1 SAR vs In-situ Measurements</h3>
+    <ul>
+      <li>Surface water area obtained from SAR shows the <strong>highest correlation</strong> with ground truth 
+          (R = <strong>0.848</strong>).</li>
+      <li>Accurately captures the seasonal rise and fall of water levels.</li>
+      <li>Performs reliably even during rapid hydrological changes.</li>
+    </ul>
+    <p><strong>Conclusion:</strong> SAR is highly effective for continuous monitoring of water surface variations.</p>
+
+    <h3>2. JRC vs In-Situ Measurements</h3>
+    <ul>
+      <li>JRC correlation with in-situ data shows lower correspondence (<strong>R = 0.581</strong>).</li>
+      <li>Frequent underestimation during monsoon and transition periods.</li>
+      <li>Contains <strong>zero-area values</strong> in several months due to:
+        <ul>
+          <li>Cloud contamination</li>
+          <li>Optical sensor limitations</li>
+          <li>Classification errors during turbidity and shadow conditions</li>
+        </ul>
+      </li>
+    </ul>
+    <p><strong>Conclusion:</strong> JRC is less reliable for month-to-month monitoring in mountainous, cloud-prone areas.</p>
+
+    <h3>3. SAR Captures Better Seasonal Patterns</h3>
+    <ul>
+      <li>SAR and in-situ measurements show clear monsoon minima and post-monsoon recovery.</li>
+      <li>JRC frequently fails to capture these troughs due to cloudy or missing optical data.</li>
+      <li>SAR's ability to penetrate clouds ensures <strong>consistent data availability year-round</strong>.
+            <li>SAR values are slightly lower (by 0.05-0.10 km² on average) than in-situ records.</li>
+      <li>Possible reasons:
+        <ul>
+          <li>Speckle filtering smooths small water patches</li>
+          <li>Dark-backscatter misclassification at steep shorelines</li>
+        </ul>
+      </li>
+      </li>
+    </ul>
+    <p><strong>Conclusion:</strong> Radar-based mapping is far more robust for regions like Nepal that experience extended cloud cover.
+    Despite minor underestimation, SAR preserves the correct trend, which matters most for hydrological assessment.</p>
+
+    <h3> Overall Conclusion</h3>
+    <blockquote class="boxed" style="border-left:4px solid #4ea1ff; padding-left:1rem;">
+      <em>
+        The strong correlation between SAR and in-situ observations demonstrates the 
+        robustness of Sentinel-1 for reservoir monitoring under Nepal's monsoon-dominated 
+        climate. JRC's weaker agreement highlights its limitations in cloud-prone, rugged terrain.
+      </em>
+    </blockquote>
+
+    <h2>Implications for Decision Makers</h2>
+
+    <p>
+      This analysis carries significant value for reservoir managers, hydropower authorities, 
+      disaster risk planners, and water resource officials:
+    </p>
+
+    <ul>
+      <li><strong>Reliable Water Monitoring:</strong> SAR provides consistent, 
+          uninterrupted measurements even when cloudy conditions prevent optical observations.</li>
+      <li><strong>Improved Hydropower Planning:</strong> Accurate water area estimation supports 
+          operational decisions on power generation and water release schedules.</li>
+      <li><strong>Early Warning & Flood Preparedness:</strong> Radar-based monitoring detects 
+          rapid water level changes that can inform downstream flood warnings.</li>
+      <li><strong>Reduced Dependence on Ground Sensors:</strong> Remote sensing offers coverage 
+          even where in-situ measurements are sparse or difficult to maintain.</li>
+      <li><strong>Cost-effective Long-term Monitoring:</strong> SAR data is freely available, 
+          enabling long-term hydrological analysis without expensive field campaigns.</li>
+    </ul>
+
+    <p>
+      <strong>Conclusion:</strong> Remote sensing for hydrology empowers decision makers with 
+      timely, accurate, and continuous information. Combining SAR with in-situ measurements forms 
+      a powerful monitoring system that enhances Nepal's capacity for water resource management 
+      and disaster resilience.
+    </p>
+
+  </div>
+</section>
+
+
 
   <footer class="site-footer">
     <div class="container footer-content">
       <div class="footer-info">
         <p><strong>Ashutosh Lamsal</strong></p>
-        <p>PhD Student, University of Houston</p>
+        <p>University of Houston</p>
         <p>Research: LiDAR, Remote Sensing, Hydrology</p>
       </div>
       <div class="footer-links">
